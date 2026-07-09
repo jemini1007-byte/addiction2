@@ -7,110 +7,135 @@ st.set_page_config(page_title="청소년 중독 취약 환경 시뮬레이터", 
 st.title("📊 청소년 중독 취약 환경 분석 및 예측 시뮬레이터")
 st.write(
     "본 시뮬레이터는 **3학년 사회문제탐구 설문조사 결과**를 기반으로 청소년 중독 환경 변수를 입력받아, "
-    "**2학년 때 탐구한 로지스틱 미분방정식 모델**을 통해 미래 중독 확산 추이를 예측하고 사회적 해결책을 제안합니다."
+    "**2학년 때 탐구한 로지스틱 미분방정식 모델**을 통해 미래 중독 확산 추이를 예측하고 구체적 사회적 해결책을 제안합니다."
 )
 
 st.markdown("---")
 
-# 2. 사이드바 - 설문조사 기반 환경 변수 입력 (3대 조작변인 반영)
-st.sidebar.header("📋 설문조사 변수 입력 (Scale: 1 ~ 10)")
-st.sidebar.write("실제 설문조사에서 도출된 영역별 평균값을 입력하세요.")
+# 2. 사이드바 - 설문조사 기반 기본 환경 변수 입력 (3대 조작변인 기준 설정)
+st.sidebar.header("📋 기초 설문조사 데이터 입력")
+st.sidebar.write("실제 설문조사에서 도출된 영역별 평균값(1~10점)을 입력하세요.")
 
-# 개인적 요인 (가중치 299/858 ≈ 34.85%)
-st.sidebar.subheader("🔴 1. 개인적 요인 (설문 가중치: 299)")
+# 개인적 요인 (가중치 299)
+st.sidebar.subheader("🔴 1. 개인적 요인 (가중치: 299)")
 stress = st.sidebar.slider("학업 및 경쟁 스트레스 지수", 1.0, 10.0, 6.0, step=0.1)
 
-# 또래 + 미디어 요인 (가중치 302/858 ≈ 35.20%)
-st.sidebar.subheader("🟠 2. 또래 + 미디어 요인 (설문 가중치: 302)")
+# 또래 + 미디어 요인 (가중치 302)
+st.sidebar.subheader("🟠 2. 또래 + 미디어 요인 (가중치: 302)")
 media = st.sidebar.slider("미디어 및 SNS 노출 빈도", 1.0, 10.0, 7.0, step=0.1)
 peer = st.sidebar.slider("또래 집단 압박 및 소외감", 1.0, 10.0, 5.0, step=0.1)
 
-# 사회적 요인 (가중치 257/858 ≈ 29.95%)
-st.sidebar.subheader("🟢 3. 사회적 요인 (설문 가중치: 257)")
+# 사회적 요인 (가중치 257)
+st.sidebar.subheader("🟢 3. 사회적 요인 (가중치: 257)")
 education = st.sidebar.slider("교내 예방 교육 및 상담 인프라", 1.0, 10.0, 4.0, step=0.1)
 family = st.sidebar.slider("가정 및 사회적 공동체 관심도", 1.0, 10.0, 5.0, step=0.1)
 
-# 3. 모델 수학적 설계 (설문 조작변인 비율 299 : 257 : 302 적용)
-total_weight = 299 + 257 + 302  # 총 가중치: 858
-w_personal = 299 / total_weight     # 약 0.3485
-w_social = 257 / total_weight       # 약 0.2995
-w_peer_media = 302 / total_weight   # 약 0.3520
+# [수학적 기초 모델 설계]
+total_weight = 299 + 257 + 302
+w_personal = 299 / total_weight
+w_social = 257 / total_weight
+w_peer_media = 302 / total_weight
 
-# 위험 요인(촉진)과 보호 요인(억제)의 가중치 수식 정의
-risk_index = (w_personal * stress) + (w_peer_media * ((media + peer) / 2.0))
-a = risk_index * 0.1  # 확산 계수 (초기 속도)
+# [현상 유지 상태의 변수 계산]
+risk_index_raw = (w_personal * stress) + (w_peer_media * ((media + peer) / 2.0))
+a_raw = risk_index_raw * 0.1
+protection_index_raw = w_social * ((education + family) / 2.0)
+K_raw = (risk_index_raw / (risk_index_raw + 0.8 * protection_index_raw)) * 100
 
-# 억제 요인: 사회적 요인(education과 family의 평균값)
-protection_index = w_social * ((education + family) / 2.0)
-
-# K는 최대 잠재 중독율(%)
-K = (risk_index / (risk_index + 0.8 * protection_index)) * 100 
-b = a / (K + 1e-5)
-
-# 4. 정책 개입 시나리오 분석 (우리가 제안하는 해결책 효과 예측)
-st.subheader("💡 사회적 개입 효과 시뮬레이션 (해결책 적용)")
-st.write(
-    f"설문 기반 조작변인 영향도 비율인 **개인(스트레스) {w_personal*100:.1f}% : 사회(인프라) {w_social*100:.1f}% : 또래+미디어 {w_peer_media*100:.1f}%**가 직접 연동됩니다."
-)
-col1, col2 = st.columns(2)
-
-with col1:
-    st.write("**[해결책 1] 교내 스트레스 완화 프로그램 도입 시 (개인적 요인 개선)**")
-    stress_reduction = st.slider("스트레스 감소율 (%)", 0, 50, 20, step=5)
-with col2:
-    st.write("**[해결책 2] 상담 인프라 및 예방 교육 예산 확충 시 (사회적 요인 개선)**")
-    edu_increase = st.slider("상담 및 교육 인프라 강화율 (%)", 0, 100, 40, step=10)
-
-# 해결책이 적용된 새로운 변수 계산 (299:257:302 가중치 비율 유지)
-stress_opt = stress * (1 - stress_reduction / 100.0)
-edu_opt = education * (1 + edu_increase / 100.0)
-
-risk_index_opt = (w_personal * stress_opt) + (w_peer_media * ((media + peer) / 2.0))
-a_opt = risk_index_opt * 0.1
-protection_index_opt = w_social * ((edu_opt + family) / 2.0)
-K_opt = (risk_index_opt / (risk_index_opt + 0.8 * protection_index_opt)) * 100
-
-# 5. 미분방정식 수치적 해석 (해 구하기)
 P0 = 1.0  # 초기 중독률 1.0% 가정
-months = np.linspace(0, 24, 100)  # 향후 2년간(24개월)의 추이 예측
+months = np.linspace(0, 24, 100)
+P_current = (K_raw * P0) / (P0 + (K_raw - P0) * np.exp(-a_raw * months))
 
-P_current = (K * P0) / (P0 + (K - P0) * np.exp(-a * months))
-P_optimized = (K_opt * P0) / (P0 + (K_opt - P0) * np.exp(-a_opt * months))
 
-# 6. 화면 출력 및 대시보드 구성 (에러 발생 가능성이 있던 특수문자 서식 제거 및 일반 텍스트 포맷팅 적용)
-main_col1, main_col2 = st.columns([1, 1])
+# 3. 화면을 두 개의 탭(Tab) 섹션으로 분리
+tab1, tab2 = st.tabs(["🚨 [섹션 1] 현상 유지 시나리오", "🎯 [섹션 2] 3대 요인별 해결책 적용 시나리오"])
 
-with main_col1:
-    st.subheader("📌 현재 환경 기반 방정식 모델")
-    st.latex(r"\frac{dP}{dt} = aP - bP^2")
-    st.text(f"- 현재 환경 확산 계수 (a): {a:.3f}")
-    st.text(f"- 현재 환경 제어 계수 (b): {b:.5f}")
-    st.info(f"🚨 현재 환경 방치 시 예상 임계 중독율 (K): {K:.1f}%")
+# ---------------------------------------------------------------- Project Tab 1
+with tab1:
+    st.subheader("🕵️‍♂️ 아무런 사회적 해결책도 도입하지 않고 방치했을 때")
+    st.warning("현재 설문조사 결과대로 청소년들의 환경이 방치될 경우 미분방정식 모델이 예측하는 결과입니다.")
+    
+    col_raw1, col_raw2 = st.columns([1, 1])
+    with col_raw1:
+        st.info(f"📈 **최종 누적 잠재 중독율 임계선 (K):** **{K_raw:.1f}%**")
+        st.text(f"- 현재 환경 확산 계수 (a): {a_raw:.3f}")
+        st.text(f"- 현재 환경 제어 계수 (b): {(a_raw / (K_raw + 1e-5)):.5f}")
+    
+    with col_raw2:
+        st.write("**⚠️ 확산 예측 그래프 (현상 유지)**")
+        raw_chart_data = pd.DataFrame({"현재 추세 유지 (방치형)": P_current}, index=months)
+        st.line_chart(raw_chart_data, color="#ff4b4b")
 
-with main_col2:
-    st.subheader("🎯 정책 해결책 도입 후 모델")
-    st.latex(r"\frac{dP}{dt} = a_{opt}P - b_{opt}P^2")
-    st.text(f"- 최적화 확산 계수 (a_opt): {a_opt:.3f}")
-    st.text(f"- 최적화 제어 계수 (b_opt): {(a_opt / (K_opt + 1e-5)):.5f}")
-    st.success(f"❇️ 개선된 임계 중독율 (K_opt): {K_opt:.1f}% (약 {K - K_opt:.1f}%p 감소)")
+    st.markdown("---")
+    st.write("📋 **방치형 모델에 대한 학술적 해석:**")
+    st.write(
+        f"개인적 스트레스 요인({w_personal*100:.1f}%)과 또래/미디어 요인({w_peer_media*100:.1f}%)의 높은 결합 가중치로 인해, "
+        f"초기 확산 속도를 뜻하는 확산 계수(a)가 매우 가파르게 상승합니다. 반면 이를 제어할 사회적 요인의 지지력이 상대적으로 낮아 "
+        f"집단 내 중독율이 최종적으로 **{K_raw:.1f}%**라는 심각한 수치에 수렴하게 됨을 보여줍니다."
+    )
 
-st.markdown("---")
-st.subheader("📈 향후 24개월 중독 확산률 예측 추이 비교")
+# ---------------------------------------------------------------- Project Tab 2
+with tab2:
+    st.subheader("🛠️ 3대 조작변인별 구체적 정책 개입")
+    st.write("각 요인에 대응하는 구체화된 정책 카드를 조절하여 사회적 변화 폭을 시뮬레이션하세요.")
+    
+    # 3대 요인별 정책 구체화 슬라이더 배치
+    policy_col1, policy_col2, policy_col3 = st.columns(3)
+    
+    with policy_col1:
+        st.markdown("### 🏫 1. 개인적 요인 해결책")
+        st.caption("**[Rest-Zone 및 학업 압박 분산 프로그램]**")
+        policy_personal = st.slider("개인 스트레스 감소율 (%)", 0, 50, 20, step=5)
+        
+    with policy_col2:
+        st.markdown("### 📱 2. 또래+미디어 요인 해결책")
+        st.caption("**[디지털 디톡스 챌린지 및 자치 규약]**")
+        policy_peer_media = st.slider("또래 동조 및 노출 통제율 (%)", 0, 50, 25, step=5)
+        
+    with policy_col3:
+        st.markdown("### 🏥 3. 사회적 요인 해결책")
+        st.caption("**[Wee클래스 접근성 강화 및 교육 확충]**")
+        policy_social = st.slider("상담 및 교육 인프라 강화율 (%)", 0, 100, 40, step=10)
 
-# 데이터프레임 구축 후 라인차트 그리기
-chart_data = pd.DataFrame({
-    "현재 추세 유지 (방치형)": P_current,
-    "해결책 적용 (선제적 예방)": P_optimized
-}, index=months)
+    # 개입 시나리오가 반영된 새로운 수학적 변수 계산 (299:302:257 가중치 적용)
+    stress_opt = stress * (1 - policy_personal / 100.0)
+    
+    media_opt = media * (1 - policy_peer_media / 100.0)
+    peer_opt = peer * (1 - policy_peer_media / 100.0)
+    
+    edu_opt = education * (1 + policy_social / 100.0)
+    family_opt = family * (1 + policy_social / 100.0)
 
-st.line_chart(chart_data)
-st.write("💡 *가로축: 경과 시간(월), 세로축: 잠재적 청소년 중독율 (%)*")
+    risk_index_opt = (w_personal * stress_opt) + (w_peer_media * ((media_opt + peer_opt) / 2.0))
+    a_opt = risk_index_opt * 0.1
+    protection_index_opt = w_social * ((edu_opt + family_opt) / 2.0)
+    K_opt = (risk_index_opt / (risk_index_opt + 0.8 * protection_index_opt)) * 100
 
-st.markdown("---")
-st.subheader("📝 분석 리포트 및 정책 제언")
-st.write(
-    f"제민이의 실측 설문 조사 데이터 분석 결과, 조작변인 기여율인 개인(299) : 사회(257) : 또래+미디어(302) 비율을 시스템 가치로 대입했을 때, "
-    f"현 상태 유지 시 청소년 집단의 최대 중독 임계 수치(K)는 {K:.1f}% 수준에 달하는 것으로 예측되었습니다. "
-    f"그러나 우리가 고안한 스트레스 완화 프로그램({stress_reduction}% 감소) 및 상담/예방 인프라 확대({edu_increase}% 강화)를 선제 적용할 경우, "
-    f"위험 요인은 대폭 상쇄되고 사회적 보호 장치가 활성화되어 집단 내 중독율 한계선을 최대 {K_opt:.1f}% 이하로 고정하여 차단할 수 있음을 수학적으로 규명하였습니다."
-)
+    P_optimized = (K_opt * P0) / (P0 + (K_opt - P0) * np.exp(-a_opt * months))
+
+    # 개선 효과 대시보드 출력
+    opt_col1, opt_col2 = st.columns([1, 1])
+    with opt_col1:
+        st.success(f"❇️ **개선된 임계 중독율 (K_opt):** **{K_opt:.1f}%**")
+        st.metric(label="중독 한계선 감소 폭", value=f"-{K_raw - K_opt:.1f}%p")
+        st.text(f"- 정책 최적화 확산 계수 (a_opt): {a_opt:.3f}")
+        st.text(f"- 정책 최적화 제어 계수 (b_opt): {(a_opt / (K_opt + 1e-5)):.5f}")
+        
+    with opt_col2:
+        st.write("**📊 정책 개입 전/후 예측 추이 비교**")
+        compare_chart_data = pd.DataFrame({
+            "현재 추세 유지 (방치형)": P_current,
+            "3대 해결책 적극 적용": P_optimized
+        }, index=months)
+        st.line_chart(compare_chart_data)
+
+    st.markdown("---")
+    st.subheader("💡 결론 및 실천 정책 제언")
+    st.write(
+        f"분석 결과, 제민이가 기획한 **3대 정책(스트레스 완화 {policy_personal}%, 미디어 통제 {policy_peer_media}%, 인프라 강화 {policy_social}%)**을 동시 가동할 때, "
+        f"청소년 사회의 잠재적 중독 한계선을 **{K_raw:.1f}%**에서 **{K_opt:.1f}%**로 대폭 억제할 수 있음이 수학적 기법으로 검증되었습니다."
+    )
+    st.info(
+        "📝 **발표자 주석:** 이 정량적 시뮬레이션 결과는 우리가 제시한 구체적 대안들(교내 Rest-Zone 설치, 학생회 디지털 디톡스 자치 규약, 모바일 Wee클래스 연동 시스템)이 "
+        "단순히 감정적인 주장을 넘어 실제 수학적 제어 시스템상에서 유의미한 위험률 감소를 이끌어낼 수 있다는 명확한 당위성을 입증합니다."
+    )
