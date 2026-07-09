@@ -9,13 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# 한글 폰트 깨짐 방지를 위한 스타일 설정
-st.markdown("""
-    <style>
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    </style>
-""", unsafe_scale=True)
-
 # 2. 메인 타이틀
 st.title("🧠 청소년 미디어 중독 시뮬레이션 및 정책 개입 효과 분석")
 st.write("미분방정식(로지스틱 모델)을 활용하여 사회적 개입에 따른 중독률 변화를 예측합니다.")
@@ -31,9 +24,9 @@ months = st.sidebar.slider("예측 기간 (개월)", min_value=6, max_value=36, 
 st.subheader("💡 사회적 개입 효과 시뮬레이션 (시나리오 조정)")
 st.write("아래 슬라이더를 조절하여 학교와 지역사회의 개입 강도를 설정해보세요.")
 
-coll, col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
-with coll:
+with col1:
     st.markdown("### 🏫 [해결책 1] 교내 스트레스 완화 정책")
     stress_reduction = st.slider("스트레스 감소 정책 강도 (%)", min_value=0, max_value=100, value=20, step=5)
 
@@ -42,27 +35,22 @@ with col2:
     edu_increase = st.slider("상담 및 교육 인프라 확대 (%)", min_value=0, max_value=100, value=30, step=5)
 
 # 5. 변수 계산 (개입 효과 반영)
-# 정책 개입 전 기준값 가정
 base_stress = 0.7
 base_education = 0.4
 base_media = 0.8
 base_family = 0.5
 
-# 개입이 적용된 새로운 변수 계산
 stress_opt = base_stress * (1 - stress_reduction / 100.0)
 edu_opt = base_education * (1 + edu_increase / 100.0)
 
-# 위험 지수 및 보호 지수 공식 적용
 risk_index_opt = (0.4 * stress_opt) + (0.3 * base_media)
 protection_index_opt = (0.5 * edu_opt) + (0.5 * base_family)
 
-# 환경 수용량 (K) 계산: 위험이 높을수록 K 증가, 보호가 높을수록 K 감소
+# 환경 수용량 (K) 계산
 K_opt = risk_index_opt / (risk_index_opt + protection_index_opt)
-# 중독 확산 속도(r) 가정
 r = 0.25 
 
 # 6. 미분방정식 수치적 해석 (로지스틱 방정식 해 구하기)
-# P(t) = (K * P0) / (P0 + (K - P0) * exp(-r * t))
 t = np.linspace(0, months, months * 10)
 P_t = (K_opt * P0) / (P0 + (K_opt - P0) * np.exp(-r * t))
 
@@ -72,12 +60,12 @@ st.markdown("---")
 st.subheader("📈 시뮬레이션 예측 결과")
 
 fig, ax = plt.subplots(figsize=(10, 4.5))
-ax.plot(t, P_t * 100, label="정책 개입 후 중독률 추이", color="#1f77b4", linewidth=2.5)
-ax.axhline(K_opt * 100, color="red", linestyle="--", alpha=0.7, label=f"예측 수용 한계선 (최대 {K_opt*100:.1f}%)")
+ax.plot(t, P_t * 100, label="Post-Intervention", color="#1f77b4", linewidth=2.5)
+ax.axhline(K_opt * 100, color="red", linestyle="--", alpha=0.7, label=f"Limit ({K_opt*100:.1f}%)")
 
-ax.set_title("시간 경과에 따른 청소년 중독률 예측", fontsize=14, pad=15)
-ax.set_xlabel("시간 (개월)", fontsize=11)
-ax.set_ylabel("중독률 (%)", fontsize=11)
+ax.set_title("Addiction Rate Prediction Over Time", fontsize=14, pad=15)
+ax.set_xlabel("Time (Months)", fontsize=11)
+ax.set_ylabel("Addiction Rate (%)", fontsize=11)
 ax.set_ylim(0, 100)
 ax.grid(True, linestyle=":", alpha=0.6)
 ax.legend(loc="upper left")
@@ -90,10 +78,10 @@ st.markdown("### 📊 수치 요약 및 정책 제언")
 col_res1, col_res2, col_res3 = st.columns(3)
 
 with col_res1:
-    st.metric(label="최종 예측 중독률 (지정 기간 후)", value=f"{P_t[-1]*100:.1f}%")
+    st.metric(label="최종 예측 중독률", value=f"{P_t[-1]*100:.1f}%")
 with col_res2:
-    st.metric(label="개입 후 위험 지수 (위험도가 낮을수록 양호)", value=f"{risk_index_opt:.2f}")
+    st.metric(label="개입 후 위험 지수", value=f"{risk_index_opt:.2f}")
 with col_res3:
-    st.metric(label="개입 후 보호 지수 (보호도가 높을수록 양호)", value=f"{protection_index_opt:.2f}")
+    st.metric(label="개입 후 보호 지수", value=f"{protection_index_opt:.2f}")
 
 st.info(f"💡 **분석 결과:** 현재 세팅된 정책을 시행할 경우, 사회적 확산 한계선(K)이 **{K_opt*100:.1f}%** 수준에서 억제되는 효과를 보입니다. 수학적 모델링에 따르면 스트레스 감소와 교육 인프라 확충이 동반될 때 확산 곡선의 기울기가 완만해집니다.")
