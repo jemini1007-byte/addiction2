@@ -88,20 +88,30 @@ st.markdown("""
         font-weight: 800 !important;
         color: #1e3a8a;
     }
+
+    /* 정책 카드 내부 일러스트 아이콘 스타일 */
+    .card-illustration {
+        font-size: 3.5rem;
+        text-align: center;
+        margin: 10px 0 20px 0;
+        animation: pulse 2s infinite alternate;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 상단 프리미엄 배너 마크업
+# 상단 프리미엄 배너 마크업 (로지스틱 미분방정식 언급 강화)
 st.markdown("""
     <div class="title-container">
         <h1>📊 청소년 중독 취약 환경 분석 및 미래 예측 시뮬레이터</h1>
-        <p>3학년 사회문제탐구 설문조사 실측 데이터와 2학년 로지스틱 미분방정식 모델의 다차원적 융합 분석 플랫폼</p>
+        <p>3학년 사회문제탐구 설문조사 실측 데이터와 수학적 <b>'로지스틱 미분방정식(Logistic Differential Equation) 모델'</b>의 다차원적 융합 분석 플랫폼</p>
     </div>
 """, unsafe_allow_html=True)
 
+# 첫 페이지 안내 문구 (로지스틱 곡선 대목 추가 및 강조)
 st.markdown("""
     본 대시보드는 청소년 중독 위험을 유발하는 다차원적 미시·거시 요인을 구조화하고, 
-    개입 정책에 따른 중독 전파 한계 지수의 변화 추이를 수학적으로 모델링하여 최적의 예방적 개입 경로를 제시합니다.
+    개입 정책에 따른 중독 전파 한계 지수의 변화 추이를 **수학적 '로지스틱 곡선(S-Curve)' 모델**을 기반으로 시뮬레이션합니다.
+    환경적 확산 압력과 수렴 한계점($K$)의 역학을 미분방정식으로 시각화하여 최적의 예방적 개입 경로를 제시합니다.
 """)
 
 st.markdown("---")
@@ -176,7 +186,7 @@ tab1, tab2 = st.tabs(["🚨 [섹션 1] 현상 유지 시나리오", "🎯 [섹�
 # ---------------------------------------------------------------- Project Tab 1
 with tab1:
     st.markdown("### 🕵️‍♂️ 아무런 사회적 해결책도 도입하지 않고 방치했을 때")
-    st.write("현재 설문조사 결과대로 청소년들의 유해 환경이 방치될 경우 미분방정식 모델이 예측하는 결과입니다.")
+    st.write("현재 설문조사 결과대로 청소년들의 유해 환경이 방치될 경우 **로지스틱 미분방정식 모델**이 예측하는 위험 확산 곡선입니다.")
     st.write("")
     
     col_raw1, col_raw2 = st.columns([4, 5], gap="large")
@@ -205,24 +215,24 @@ with tab1:
         st.caption("※ 모든 요인이 위험으로 작동하므로, 각 지표의 누적치가 환경 확산 계수(a)와 최종 임계선(K)을 동시에 밀어 올립니다.")
     
     with col_raw2:
-        st.write("**⚠️ 확산 예측 그래프 (현상 유지)**")
+        st.write("**⚠️ 로지스틱 확산 예측 곡선 (현상 유지)**")
         raw_chart_data = pd.DataFrame({"현재 추세 유지 (방치형)": P_current}, index=months)
         st.line_chart(raw_chart_data, color="#ef4444", height=280)
 
     st.markdown("---")
-    st.markdown("#### 📋 방치형 모델에 대한 학술적 해석")
+    st.markdown("#### 📋 로지스틱 방치형 모델에 대한 학술적 해석")
     st.write(
         f"가중치 분석 결과, 개인의 내면적 조절 실패({w_control*100:.1f}%) 및 불안정 정서({w_emotional*100:.1f}%), "
         f"관계/미디어 자극 환경({(w_media+w_peer)*100:.1f}%), "
         f"그리고 거시 사회 구조적 불안정성({w_macro*100:.1f}%)과 미시적 유대감 결핍({w_micro*100:.1f}%)이 "
         f"연쇄적으로 중독 취약성을 자극합니다. 별도의 중재 정책이 수립되지 않는다면, 초기 전파 속도를 지배하는 "
-        f"환경 확산 계수(a)가 가파르게 상승하며 최종 누적 잠재 한계선(K) 역시 **{K_raw:.2f}%**라는 높은 임계 수치로 고착화됩니다."
+        f"환경 확산 계수(a)가 가파르게 상승하며 **로지스틱 고유의 S자형 성장을 거쳐** 최종 누적 잠재 한계선(K) 역시 **{K_raw:.2f}%**라는 높은 임계 수치로 고착화됩니다."
     )
 
 # ---------------------------------------------------------------- Project Tab 2
 with tab2:
     st.markdown("### 🛠️ 3대 차원·6대 지표별 다면적 개입 대안")
-    st.write("각 영역별 맞춤형 사회 정책 카드를 발동하여 개선 효과를 백분율 단위로 조절하고, 예측 곡선의 변화를 시뮬레이션하세요.")
+    st.write("각 영역별 맞춤형 사회 정책 카드를 발동하여 개선 효과를 백분율 단위로 조절하고, 로지스틱 예측 곡선의 변화를 시뮬레이션하세요.")
     st.write("")
     
     # 3대 대안축 구성을 위해 안정감 있는 3열 레이아웃 적용
@@ -230,9 +240,10 @@ with tab2:
     
     with policy_col1:
         st.markdown("""
-            <div style='background-color:#eff6ff; padding:20px; border-radius:12px; border:1px solid #bfdbfe; min-height:360px;'>
+            <div style='background-color:#eff6ff; padding:20px; border-radius:12px; border:1px solid #bfdbfe; min-height:430px;'>
                 <span style="font-size: 1.2rem; font-weight: 800; color: #1e3a8a;">🏫 1. 개인 내면 개입 대안</span>
-                <p style="font-size:0.85rem; color:#1e40af; margin-bottom: 15px;">자기 제어력 회복 및 심리 정서적 치유</p>
+                <p style="font-size:0.85rem; color:#1e40af; margin-bottom: 5px;">자기 제어력 회복 및 심리 정서적 치유</p>
+                <div class="card-illustration">🧠✨</div>
         """, unsafe_allow_html=True)
         policy_control = st.slider(
             "1-A. 회복탄력성 및 자기통제 훈련 지원율 (%)", 0, 50, 20, step=5,
@@ -246,9 +257,10 @@ with tab2:
         
     with policy_col2:
         st.markdown("""
-            <div style='background-color:#fff7ed; padding:20px; border-radius:12px; border:1px solid #fed7aa; min-height:360px;'>
+            <div style='background-color:#fff7ed; padding:20px; border-radius:12px; border:1px solid #fed7aa; min-height:430px;'>
                 <span style="font-size: 1.2rem; font-weight: 800; color: #c2410c;">📱 2. 관계망 및 미디어 개입 대안</span>
-                <p style="font-size:0.85rem; color:#9a3412; margin-bottom: 15px;">디지털 환경 순화 및 건전한 하위문화 유도</p>
+                <p style="font-size:0.85rem; color:#9a3412; margin-bottom: 5px;">디지털 환경 순화 및 건전한 하위문화 유도</p>
+                <div class="card-illustration">🛡️🌐</div>
         """, unsafe_allow_html=True)
         policy_media = st.slider(
             "2-A. 디지털 디톡스 및 접속 제한 조치 (%)", 0, 50, 20, step=5,
@@ -262,9 +274,10 @@ with tab2:
         
     with policy_col3:
         st.markdown("""
-            <div style='background-color:#f0fdf4; padding:20px; border-radius:12px; border:1px solid #bbf7d0; min-height:360px;'>
+            <div style='background-color:#f0fdf4; padding:20px; border-radius:12px; border:1px solid #bbf7d0; min-height:430px;'>
                 <span style="font-size: 1.2rem; font-weight: 800; color: #15803d;">🏛️ 3. 거시·미시 사회 체계 대안</span>
-                <p style="font-size:0.85rem; color:#166534; margin-bottom: 15px;">공적 예방망 제도화 및 밀착 돌봄 연대 구축</p>
+                <p style="font-size:0.85rem; color:#166534; margin-bottom: 5px;">공적 예방망 제도화 및 밀착 돌봄 연대 구축</p>
+                <div class="card-illustration">🏢🤝</div>
         """, unsafe_allow_html=True)
         policy_macro = st.slider(
             "3-A. 지역 예방 공적 인프라 확충율 (%)", 0, 100, 40, step=10,
@@ -322,7 +335,7 @@ with tab2:
         )
         
     with opt_col2:
-        st.write("**📊 정책 개입 전/후 예측 추이 시뮬레이션 비교**")
+        st.write("**📊 로지스틱 곡선 정책 개입 전/후 예측 추이 비교**")
         compare_chart_data = pd.DataFrame({
             "현재 추세 유지 (방치형)": P_current,
             "다차원 복합 정책 전개 시": P_optimized
@@ -332,7 +345,7 @@ with tab2:
     st.markdown("---")
     st.markdown("#### 💡 결론 및 실천 정책 제언")
     st.write(
-        f"수학적 로지스틱 시계열 시뮬레이션 결과, 기획된 다차원 정책 중재 솔루션을 동시에 발동할 때, "
+        f"수학적 **로지스틱 시계열 시뮬레이션** 결과, 기획된 다차원 정책 중재 솔루션을 동시에 발동할 때, "
         f"청소년 집단의 잠재적 중독 한계선을 **{K_raw:.2f}%**에서 **{K_opt:.2f}%**로 최대 **{decrease_value:.2f}%p** 가량 극적으로 통제할 수 있음이 학술적으로 검증되었습니다. "
         "이는 단순한 개인 징계나 한계 영역 중심의 교정 정책을 넘어, 인간생태학적 모델(Ecological Systems Theory) 관점에서 "
         "개인의 자기 통제력 회복, 정서 치유, 그리고 마이크로/매크로 사회적 제도 개선과 돌봄 복원이 동시다발적으로 결합할 때 사회적 정책 효율성이 극대화됨을 실증합니다."
